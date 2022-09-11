@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-world-flask
+spec:
+  containers:
+    - name: flask
+      image: lyzhang1999/hello-world-flask:latest
+      ports:
+        - containerPort: 5000
