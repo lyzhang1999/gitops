@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1
+
 # Step 1: build golang binary
 FROM golang:1.17 as builder
 WORKDIR /opt/app
