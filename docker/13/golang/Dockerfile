@@ -8,7 +8,7 @@ ARG LD_FLAGS='-linkmode external -w -extldflags "-static"'
 RUN go build -ldflags "$LD_FLAGS" -o example
 
 
-FROM alpine as runner
+FROM ubuntu:latest
 WORKDIR /opt/app
 COPY --from=builder /opt/app/example /opt/app/example
 

@@ -17,7 +17,7 @@ if [ "$TARGETARCH" = "arm64" ]; then CC=aarch64-linux-gnu-gcc && CC_FOR_TARGET=g
 GOOS=$TARGETOS GOARCH=$TARGETARCH CC=$CC CC_FOR_TARGET=$CC_FOR_TARGET go build -ldflags "$LD_FLAGS" -o /opt/app/example .
 
 
-FROM alpine:latest
+FROM ubuntu:latest
 WORKDIR /opt/app
 COPY --from=build /opt/app/example ./example
 CMD ["/opt/app/example"]
