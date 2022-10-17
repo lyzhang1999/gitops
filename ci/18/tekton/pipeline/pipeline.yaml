@@ -1,0 +1,76 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: github-trigger-pipeline
+spec:
+  workspaces:
+    - name: pipeline-pvc
+    - name: git-credentials
+      description: My ssh credentials
+  params:
+    - name: subdirectory # 为每一个 Pipeline 配置一个 workspace，防止并发错误
+      type: string
+      default: ""
+    - name: git_url  # https git repo url
+    - name: dockerfile_path
+      type: string
+      default: "Dockerfile"
+    - name: registry_url
+      type: string
+      default: "docker.io"
+  tasks:
+    - name: clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: pipeline-pvc
+        - name: ssh-directory
+          workspace: git-credentials
+      params:
+        - name: subdirectory
+          value: $(params.subdirectory)
+        - name: url
+          value: $(params.git_url)
+    - name: build-and-push-frontend
+      taskRef:
+        name: docker-socket
+      runAfter:
+        - clone
+      workspaces:
+        - name: source
+          workspace: pipeline-pvc
+      params:
+        - name: image
+          value: "frontend"
+        - name: subdirectory
+          value: $(params.subdirectory)
+        - name: tag
+          value: "$(tasks.clone.results.commit_short)"
+        - name: registry_url
+          value: $(params.registry_url)
+        - name: context
+          value: "./frontend"
+        - name: dockerfile_path
+          value: $(params.dockerfile_path)
+    - name: build-and-push-backend
+      taskRef:
+        name: docker-socket
+      runAfter:
+        - clone
+      workspaces:
+        - name: source
+          workspace: pipeline-pvc
+      params:
+        - name: image
+          value: "backend"
+        - name: subdirectory
+          value: $(params.subdirectory)
+        - name: tag
+          value: "$(tasks.clone.results.commit_short)"
+        - name: registry_url
+          value: $(params.registry_url)
+        - name: context
+          value: "./backend"
+        - name: dockerfile_path
+          value: $(params.dockerfile_path)

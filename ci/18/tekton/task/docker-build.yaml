@@ -1,0 +1,77 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: docker-socket
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: image
+      description: Reference of the image docker will produce.
+    - name: tag
+      description: Tag of the image docker will produce.
+    - name: registry_mirror
+      description: Specific the docker registry mirror
+      default: ""
+    - name: registry_url
+      description: Private docker images registry url
+    - name: dockerfile_path
+      description: Dockerfile path
+      default: "Dockerfile"
+    - name: context
+      description: Dockerfile context
+      default: "."
+    - name: subdirectory # 为每一个 task 设置一个唯一的 workspace
+      description: Subdirectory, set as git commit short id
+  steps:
+    - name: docker-build
+      image: docker:stable
+      env:
+        - name: IMAGE
+          value: $(params.image)
+        - name: TAG
+          value: $(params.tag)
+        - name: DOCKERFILE_PATH
+          value: "$(params.dockerfile_path)"
+        - name: CONTEXT
+          value: "$(params.context)"
+        - name: SUBDIRECTORY
+          value: "$(params.subdirectory)"
+        - name: DOCKER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: registry-auth
+              key: password
+        - name: DOCKER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: registry-auth
+              key: username
+      workingDir: $(workspaces.source.path)
+      script: |
+        cd $SUBDIRECTORY
+        docker login $(params.registry_url) -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        docker build --no-cache -f $CONTEXT/$DOCKERFILE_PATH -t $DOCKER_USERNAME/$IMAGE:$TAG $CONTEXT
+        docker push $DOCKER_USERNAME/$IMAGE:$TAG
+      volumeMounts: # 共享 docker.socket
+        - mountPath: /var/run/
+          name: dind-socket
+  sidecars: #sidecar 提供 docker daemon
+    - image: docker:dind
+      name: server
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - mountPath: /var/lib/docker
+          name: dind-storage
+        - mountPath: /var/run/
+          name: dind-socket
+      readinessProbe:
+        periodSeconds: 1
+        exec:
+          command: ['ls', '/certs/client/ca.pem']
+  volumes: # 无需 PVC
+    - name: dind-socket
+      emptyDir: {}
+    - name: dind-storage
+      emptyDir: {}

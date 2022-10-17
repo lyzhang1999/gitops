@@ -1,0 +1,29 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: github-template
+spec:
+  params:
+    - name: git_url
+    - name: subdirectory
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: github-run-
+      spec:
+        serviceAccountName: tekton-build-sa
+        pipelineRef:
+          name: github-trigger-pipeline
+        workspaces:
+          - name: pipeline-pvc
+            persistentVolumeClaim:
+              claimName: pipeline-pvc
+          - name: git-credentials
+            secret:
+              secretName: git-credentials
+        params:
+          - name: git_url
+            value: $(tt.params.git_url) # 注意：$tt 开头，从 EventListener binding params 获取
+          - name: subdirectory
+            value: $(tt.params.subdirectory)
