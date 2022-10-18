@@ -37,6 +37,10 @@ spec:
           value: "$(params.context)"
         - name: SUBDIRECTORY
           value: "$(params.subdirectory)"
+        - name: REGISTRY_MIRROR
+          value: "$(params.registry_mirror)"
+        - name: REGISTRY_URL
+          value: "$(params.registry_url)"
         - name: DOCKER_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -50,9 +54,14 @@ spec:
       workingDir: $(workspaces.source.path)
       script: |
         cd $SUBDIRECTORY
-        docker login $(params.registry_url) -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker build --no-cache -f $CONTEXT/$DOCKERFILE_PATH -t $DOCKER_USERNAME/$IMAGE:$TAG $CONTEXT
-        docker push $DOCKER_USERNAME/$IMAGE:$TAG
+        docker login $REGISTRY_URL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        if [ "${REGISTRY_URL}" = "docker.io" ] ; then
+          docker build --no-cache -f $CONTEXT/$DOCKERFILE_PATH -t $DOCKER_USERNAME/$IMAGE:$TAG $CONTEXT
+          docker push $DOCKER_USERNAME/$IMAGE:$TAG
+          exit
+        fi
+        docker build --no-cache -f $CONTEXT/$DOCKERFILE_PATH -t $REGISTRY_URL/$REGISTRY_MIRROR/$IMAGE:$TAG $CONTEXT
+        docker push $REGISTRY_URL/$REGISTRY_MIRROR/$IMAGE:$TAG
       volumeMounts: # 共享 docker.socket
         - mountPath: /var/run/
           name: dind-socket

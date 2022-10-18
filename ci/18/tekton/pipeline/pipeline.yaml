@@ -11,13 +11,16 @@ spec:
     - name: subdirectory # 为每一个 Pipeline 配置一个 workspace，防止并发错误
       type: string
       default: ""
-    - name: git_url  # https git repo url
+    - name: git_url
     - name: dockerfile_path
       type: string
       default: "Dockerfile"
     - name: registry_url
       type: string
       default: "docker.io"
+    - name: registry_mirror
+      type: string
+      default: ""
   tasks:
     - name: clone
       taskRef:
@@ -49,6 +52,8 @@ spec:
           value: "$(tasks.clone.results.commit_short)"
         - name: registry_url
           value: $(params.registry_url)
+        - name: registry_mirror
+          value: $(params.registry_mirror)
         - name: context
           value: "./frontend"
         - name: dockerfile_path
@@ -70,6 +75,8 @@ spec:
           value: "$(tasks.clone.results.commit_short)"
         - name: registry_url
           value: $(params.registry_url)
+        - name: registry_mirror
+          value: $(params.registry_mirror)
         - name: context
           value: "./backend"
         - name: dockerfile_path

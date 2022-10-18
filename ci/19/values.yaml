@@ -1,0 +1,34 @@
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    certSource: secret
+    secret:
+      secretName: "harbor-secret-tls"
+      notarySecretName: "notary-secret-tls"
+  ingress:
+    hosts:
+      core: harbor.n7t.dev
+      notary: notary.n7t.dev
+    className: nginx
+    annotations:
+      kubernetes.io/tls-acme: "true"
+externalURL: harbor.n7t.dev
+persistence:
+  persistentVolumeClaim:
+    registry:
+      size: 20Gi
+    chartmuseum:
+      size: 10Gi
+    jobservice:
+      jobLog:
+        size: 10Gi
+      scanDataExports:
+        size: 10Gi
+    database:
+      size: 10Gi
+    redis:
+      size: 10Gi
+    trivy:
+      size: 10Gi
+    
