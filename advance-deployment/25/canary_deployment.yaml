@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: green
+  name: canary
   labels:
-    app: green
+    app: canary
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: green
+      app: canary
   template:
     metadata:
       labels:
-        app: green
+        app: canary
     spec:
       containers:
       - name: demo
@@ -24,14 +24,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: green-service
+  name: canary-service
   labels:
-    app: green
+    app: canary
 spec:
   ports:
   - protocol: TCP
     port: 80
     targetPort: 8080
   selector:
-    app: green
+    app: canary
   type: ClusterIP
