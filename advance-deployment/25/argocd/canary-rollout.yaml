@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: canary-demo
-        image: argoproj/rollouts-demo:blue
+        image: argoproj/rollouts-demo:green
         imagePullPolicy: Always
         ports:
         - name: http
@@ -42,11 +42,11 @@ spec:
           additionalIngressAnnotations:
             canary-by-header: X-Canary
       steps:
-        - setWeight: 25
+        - setWeight: 20
         - pause: {}
         - setWeight: 50
         - pause:
-            duration: 5m
-        - setWeight: 75
+            duration: 30s
+        - setWeight: 70
         - pause:
-            duration: 5m
+            duration: 30s
