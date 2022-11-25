@@ -350,9 +350,6 @@ metadata:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "10254"
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
@@ -411,9 +408,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "10254"
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
