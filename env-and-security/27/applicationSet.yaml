@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ""
+spec:
+  generators:
+  - git:
+      repoURL: "" #https://github.com/org/<app_name>-deploy.git
+      revision: HEAD
+      files:
+      - path: "" #<app_name>/env/*/values.yaml
+  template:
+    metadata:
+      name: "" #{{path.basename}}-<app_name>
+    spec:
+      project: default
+      source:
+        repoURL: "" #https://github.com/org/<app_name>-deploy.git
+        targetRevision: HEAD
+        path: "" #<app_name>
+        helm:
+          valueFiles:
+          - "env/{{path.basename}}/values.yaml"
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: '' #<app_name>-{{path.basename}}
+      syncPolicy:
+        automated: {}
+        syncOptions:
+          - CreateNamespace=true
