@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: running
+  labels:
+    app: nginx
+spec:
+  containers:
+    - name: web
+      image: nginx
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backoff
+spec:
+  containers:
+    - name: web
+      image: nginx:not-exist
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: error
+spec:
+  containers:
+    - name: web
+      image: nginx
+      command: ["sleep", "a"]
