@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    release: prometheus
+  name: http-success-rate
+  namespace: prometheus
+spec:
+  groups:
+  - name: nginx.http.rate
+    rules:
+    - expr: |
+        sum(rate(nginx_ingress_controller_requests{controller_pod=~".*",controller_class=~".*",namespace=~".*",status!~"[4-5].*"}[2m])) / sum(rate(nginx_ingress_controller_requests{controller_pod=~".*",controller_class=~".*",namespace=~".*"}[2m])) * 100 <= 90
+      for: 1m
+      alert: HTTPSuccessRateDown
+      annotations:
+        summary: "HTTP 请求成功率小于 90%"
+        description: "HTTP 请求成功率小于 90%，请及时处理"
