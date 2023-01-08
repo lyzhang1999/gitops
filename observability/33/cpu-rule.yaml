@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    release: prometheus
+  name: cpu-usage
+  namespace: prometheus
+spec:
+  groups:
+  - name: cpu.usage
+    rules:
+    - expr: |
+        round( 100 * sum( rate(container_cpu_usage_seconds_total{container_name!="POD"}[1m]) ) by (pod, container_name, namespace) / sum( kube_pod_container_resource_limits{container_name!="POD",resource="cpu"} ) by (pod, container_name, namespace) ) > 80
+      for: 1m
+      alert: ContainerCPUUsage
+      annotations:
+        summary: "Pod {{ $labels.pod }} CPU 使用率超过限制值 80%"
+        description: "Namespace {{ $labels.namespace }}, Pod {{ $labels.pod }}, 容器 {{ $labels.container_name }} CPU 使用率为 {{ $value }}, LABELS = {{ $labels }}"
